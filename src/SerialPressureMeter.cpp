@@ -6,22 +6,22 @@
 
 #define ANALOGPIN 0
 #define PERIOD 100
-#define DATACOLUMN 2
-#define RANGEMAX 10000
+#define DATACOLUMN 3
+#define RANGEMAX 6000
 #define RANGEMIN 0
 #define SDCHIPSELECT 10
+#define THRESHOLD 3000
+#define LOGFILE "datalog.csv"
 
 RTC_DS1307 rtc;
-String dataFileName = "";
-DateTime lastTime;
-long lastMillis;
+String dataFileName;
 
 void setup()
 {
     // Initilize serial port
     while (!Serial)
         ;
-    Serial.begin(19200);
+    Serial.begin(115200);
 
     // Initialize DS1307 chip and set date and time
     Serial.println("Initializing RTC ...");
@@ -35,9 +35,9 @@ void setup()
     {
         Serial.println("RTC is NOT running!");
     }
-    DateTime now = rtc.now();
     Serial.print("RTC initialized, current time: ");
-    Serial.println(now.timestamp());
+    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    Serial.println(getTimeStamp());
 
     // Initialize SD card
     Serial.println("Initializing SD card ...");
@@ -48,7 +48,7 @@ void setup()
             ;
     }
     Serial.println("SD card initialized.");
-    dataFileName = "test.csv";
+    dataFileName = LOGFILE;
 }
 
 void loop()
@@ -58,6 +58,10 @@ void loop()
 
     datas[0] = analogToPressure(_sensorValue);
     datas[1] = _sensorValue;
+    if (datas[0] >= THRESHOLD)
+        datas[2] = 1;
+    else
+        datas[2] = 0;
 
     sendToSerial(datas);
     logToSdcard(datas);
@@ -78,12 +82,6 @@ void sendToSerial(double *datas)
     Serial.println(message);
 }
 
-double analogToPressure(int value)
-{
-    double result = RANGEMIN + ((RANGEMAX - RANGEMIN) / 1023.00) * (double)value;
-    return result;
-}
-
 void logToSdcard(double *datas)
 {
     String message = "";
@@ -101,6 +99,7 @@ void logToSdcard(double *datas)
     {
         dataFile.println(message);
         dataFile.close();
+        // Serial.println(message);
     }
     else
     {
@@ -108,14 +107,26 @@ void logToSdcard(double *datas)
     }
 }
 
+double analogToPressure(int value)
+{
+    double result = RANGEMIN + ((RANGEMAX - RANGEMIN) / 1023.00) * (double)value;
+    return result;
+}
+
 String getTimeStamp()
 {
     String timeStamp = "";
     DateTime now = rtc.now();
-    long currentMillis = millis();
-    timeStamp += now.timestamp();
+    timeStamp += now.year();
+    timeStamp += "-";
+    timeStamp += now.month();
+    timeStamp += "-";
+    timeStamp += now.day();
     timeStamp += ",";
-    timeStamp += String(currentMillis - lastMillis);
-    timeStamp += ",";
-    lastMillis = currentMillis;
+    timeStamp += now.hour();
+    timeStamp += ":";
+    timeStamp += now.minute();
+    timeStamp += ":";
+    timeStamp += now.second();
+    return timeStamp;
 }
