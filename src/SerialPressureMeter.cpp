@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <RTClib.h>
+#include <avr/wdt.h>
 #include "SerialPressureMeter.h"
 
 #define ANALOGPIN 0
@@ -49,10 +50,17 @@ void setup()
     }
     Serial.println("SD card initialized.");
     dataFileName = LOGFILE;
+
+    // Watchdog
+    wdt_enable(WDTO_1S);
 }
 
 void loop()
 {
+    // Reset watchdog
+    wdt_reset();
+
+    // Get sensor value
     double datas[DATACOLUMN];
     int _sensorValue = analogRead(ANALOGPIN);
 
