@@ -26,18 +26,17 @@ void setup()
 
     // Initialize DS1307 chip and set date and time
     Serial.println("Initializing RTC ...");
-    if (!rtc.begin())
+    while (!rtc.begin())
     {
         Serial.println("Couldn't find RTC.");
-        while (1)
-            ;
     }
-    if (!rtc.isrunning())
+    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    while (!rtc.isrunning())
     {
         Serial.println("RTC is NOT running!");
+        delay(1000);
     }
     Serial.print("RTC initialized, current time: ");
-    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
     Serial.println(getTimeStamp());
 
     // Initialize SD card
