@@ -6,12 +6,12 @@
 #include "SerialPressureMeter.h"
 
 #define ANALOGPIN 0
-#define PERIOD 100
+#define PERIOD 20
 #define DATACOLUMN 3
 #define RANGEMAX 6000
 #define RANGEMIN 0
 #define SDCHIPSELECT 10
-#define THRESHOLD 3000
+#define THRESHOLD 2000
 #define LOGFILE "datalog.csv"
 
 RTC_DS1307 rtc;
